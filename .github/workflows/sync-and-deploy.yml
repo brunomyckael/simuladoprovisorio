@@ -34,11 +34,13 @@ jobs:
 
       - name: Copiar backup completo para o provisório
         run: |
-          rsync -a --delete \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='CNAME' \
-            site/ ./
+          find . -mindepth 1 -maxdepth 1 \
+            ! -name '.git' \
+            ! -name '.github' \
+            ! -name 'site' \
+            ! -name 'CNAME' \
+            -exec rm -rf {} +
+          rsync -a --exclude='.git' site/ ./
           rm -rf site
           touch .nojekyll
 
