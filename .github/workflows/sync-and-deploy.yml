@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: brunomyckael/cfc-sao-luiz-simulado
-          ref: a7e25a7ae9f108b9371057bd6d736aac0cdb53dc
+          ref: e7596b72f4acc9bb4bad5c5dbeb03f6d1eb3b743
           path: site
 
       - name: Copiar backup completo para o provisório
