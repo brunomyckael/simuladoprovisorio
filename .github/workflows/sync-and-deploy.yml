@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -22,25 +22,45 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Baixar versão confirmada do site
+      - name: Baixar repositório provisório
+        uses: actions/checkout@v4
+
+      - name: Baixar versão confirmada do simulado
         uses: actions/checkout@v4
         with:
           repository: brunomyckael/cfc-sao-luiz-simulado
           ref: a7e25a7ae9f108b9371057bd6d736aac0cdb53dc
           path: site
 
-      - name: Preparar arquivos públicos
+      - name: Copiar backup completo para o provisório
         run: |
-          rm -rf site/.git site/.github site/CNAME
-          touch site/.nojekyll
+          rsync -a --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='CNAME' \
+            site/ ./
+          rm -rf site
+          touch .nojekyll
+
+      - name: Registrar arquivos no GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração para registrar."
+          else
+            git commit -m "Sincroniza versão de backup do simulado"
+            git push
+          fi
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
 
       - name: Enviar arquivos para o Pages
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
-          path: site
+          path: .
 
       - name: Publicar no GitHub Pages
         id: deployment
